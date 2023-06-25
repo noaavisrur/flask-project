@@ -1,7 +1,7 @@
 FROM python:3.8
 
 # set a directory for the app
-WORKDIR /usr/src/app
+WORKDIR /home/noa/flask_proj/alpaca-flask
 
 # copy all the files to the container
 COPY . .

@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    environment {
+        // Initialize the initial version tag
+        versionTag = '1.0'
+        previousTag = ''
+        repositoryName = 'alpaca-flask'
+        dockerHubUsername = 'noaavisrur'
+        newTag = ''
+        currentTag = ''
+    }
+
+    stages {
+        stage('Clean up & clone') {
+            steps {
+                sh 'sudo rm -rf *'
+                sh 'git clone https://github.com/noaavisrur/alpaca-flask.git'
+            }
+        }
+        
+        stage('Build and Push Docker Image') {
+            steps {
+                dir('alpaca-flask/flask/flask-app') {
+                    sh "docker build -t ${dockerHubUsername}/${repositoryName}:latest ."
+                    sh "docker push ${dockerHubUsername}/${repositoryName}:latest"
+                }
+            }
+        }
+    }
+}

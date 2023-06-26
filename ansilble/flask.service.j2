@@ -1,0 +1,12 @@
+[Unit]
+Description=Flask Application
+After=network.target
+
+[Service]
+User=ec2-user
+WorkingDirectory=/home/ec2-user/flask/alpaca-flask/flask-app
+ExecStart=python3 /home/ec2-user/flask/alpaca-flask/flask-app/app.py flask run --host=0.0.0.0
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

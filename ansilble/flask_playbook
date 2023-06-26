@@ -1,0 +1,76 @@
+---
+- name: Flask Playbook
+  hosts: flask
+  gather_facts: true
+
+  tasks:
+    - name: Update apt cache
+      dnf:
+        update_cache: yes
+      become: true
+
+    - name: Install Python 3 and pip
+      dnf:
+        name: python3-pip
+        state: present
+      become: true
+
+    - name: Install Git
+      dnf:
+        name: git
+        state: present
+      become: true
+     
+    - name: Clean up directory
+      file:
+        path: /home/ec2-user/flask
+        state: absent
+      become: true
+
+    - name: Clone Flask project
+      git:
+        repo: https://github.com/noaavisrur/alpaca-flask.git
+        dest: /home/ec2-user/flask/alpaca-flask
+      become: true
+
+    - name: Install project requirements
+      pip:
+        requirements: /home/ec2-user/flask/alpaca-flask/flask-app/requirements.txt
+      become: true
+
+    - name: Set executable permissions for playbook
+      file:
+        path: /home/ec2-user/flask/alpaca-flask/flask-app/app.py
+        mode: ugo+rx
+      become: true
+
+    - name: Configure Flask service
+      template:
+        src: flask.service.j2
+        dest: /etc/systemd/system/flask.service
+      notify:
+        - Restart Flask service
+      become: true
+
+    - name: Enable Flask service
+      systemd:
+        name: flask
+        enabled: yes
+      become: true
+
+    - name: Start Flask service
+      systemd:
+        name: flask
+        state: started
+        daemon_reload: yes
+      become: true
+
+  handlers:
+    - name: Restart Flask service
+      systemd:
+        name: flask
+        state: restarted
+        daemon_reload: yes
+      become: true
+
+ 

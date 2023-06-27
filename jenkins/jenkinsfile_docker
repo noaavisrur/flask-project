@@ -39,7 +39,7 @@ pipeline {
             sh 'aws ec2 start-instances --instance-ids i-0cfdbf11a0eef79f0 --region us-east-1'
              sshagent(['noaavisrurssh']) {
               script {
-                  def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@$(test_server}"
+                  def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
                             sh """
                                 ${sshCommand} sudo dnf update -y
                                 ${sshCommand} sudo dnf install docker -y

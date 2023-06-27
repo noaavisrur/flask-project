@@ -9,6 +9,8 @@ pipeline {
         dockerHubUsername = 'noaavisrur'
         newTag = ''
         currentTag = ''
+        test_server = ' ' 
+        prod_server = ' '
     }
 
     stages {
@@ -27,5 +29,19 @@ pipeline {
                 }
             }
         }
+     stage('Deploy Docker into EC2 Test-Servers') {
+    steps {
+        // Configure AWS credentials
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+            // Install AWS CLI (if not already installed)
+            sh 'pip install awscli --upgrade --user'
+            // Start EC2 instance
+            sh 'aws ec2 start-instances --instance-ids i-0cfdbf11a0eef79f0 --region us-east-1'
+            // Pull & run the Docker image
+            sh 'docker run -d -p 80:80 --name my-container noaavisrur/alpaca-flask:latest'
+        }
+    }
+}
+
     }
 }

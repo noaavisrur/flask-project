@@ -53,6 +53,16 @@ pipeline {
         }
     }
 }
-
+ stage('testing') {
+            steps {
+                // Configure AWS credentials
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+                sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/alpaca-flask/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
+                  sshagent(['noaavisrurssh']) {
+                  sh "${sshCommand} 'cd /home/ec2-user && bash test_script.sh'"
+}
+}
+}
+}
     }
 }

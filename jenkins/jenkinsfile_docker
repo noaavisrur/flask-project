@@ -84,8 +84,6 @@ pipeline {
                 }
             }
             steps {
-                // This stage will only execute if the test script succeeds
-                if (currentBuild.result == 'SUCCESS') {
                    // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
                     // Install AWS CLI (if not already installed)
@@ -99,4 +97,4 @@ pipeline {
        
 }
 }
-}
+

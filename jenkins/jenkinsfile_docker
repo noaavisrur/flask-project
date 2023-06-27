@@ -77,8 +77,12 @@ pipeline {
                 }
             }
         }
-        
-        stage('deploy to production') {
+ stage('Additional Stage') {
+            when {
+                expression {
+                    currentBuild.result == 'SUCCESS'
+                }
+            }
             steps {
                 // This stage will only execute if the test script succeeds
                 if (currentBuild.result == 'SUCCESS') {
@@ -91,7 +95,8 @@ pipeline {
     
 }
 }
-}
+            }
+       
 }
 }
 }

@@ -9,8 +9,9 @@ echo "HTTP response code: ${response}"
 
 # Check if response code indicates success or failure
 if [ "${response}" == "200" ]; then
-    return "Flask directory test passed!"
+    echo "Flask directory test passed!"
+    exit 0 #success
 else
-    return "Flask directory test failed!"
+    echo "Flask directory test failed!"
     exit 1  # Exit with non-zero status to indicate failure
 fi

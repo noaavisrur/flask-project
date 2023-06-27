@@ -9,7 +9,7 @@ pipeline {
         dockerHubUsername = 'noaavisrur'
         newTag = ''
         currentTag = ''
-        test_server = ' ' 
+        test_server = '174.129.170.89' 
         prod_server = ' '
     }
 
@@ -37,11 +37,21 @@ pipeline {
             sh 'pip install awscli --upgrade --user'
             // Start EC2 instance
             sh 'aws ec2 start-instances --instance-ids i-0cfdbf11a0eef79f0 --region us-east-1'
-            // Pull & run the Docker image
-              sh 'docker stop my-container'
-              sh 'docker rm my-container'
-           sh 'docker run -d -p 81:80 --rm --name my-container noaavisrur/alpaca-flask:latest'
-
+             sshagent(['noaavisrurssh']) {
+              script {
+                  def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@$(test_server}"
+                            sh """
+                                ${sshCommand} sudo dnf update -y
+                                ${sshCommand} sudo dnf install docker -y
+                                ${sshCommand} sudo service docker start
+                                ${sshCommand} sudo systemctl start docker
+                                ${sshCommand} sudo usermod -a -G docker ec2-user
+                                ${sshCommand} docker stop my-container
+                                ${sshCommand} docker rm my-container
+                                ${sshCommand} docker run -d -p 5000:5000 --rm --name my-container noaavisrur/alpaca-flask:latest  
+                            """
+                }
+         }
         }
     }
 }

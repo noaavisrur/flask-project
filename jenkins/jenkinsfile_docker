@@ -57,23 +57,40 @@ pipeline {
             }
         }
         
-        stage('testing') {
+        stage('Testing') {
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    // Copy script to EC2 Test Server
-                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/alpaca-flask/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
-                    
-                    sshagent(['noaavisrurssh']) {
-                        script {
-                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
-                            sh """
-                                ${sshCommand} 'cd /home/ec2-user && bash test_script.sh'
-                            """
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        // Copy script to EC2 Test Server
+                        sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/alpaca-flask/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
+                        
+                        sshagent(['noaavisrurssh']) {
+                            script {
+                                def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+                                sh """
+                                    ${sshCommand} 'cd /home/ec2-user && bash test_script.sh'
+                                """
+                            }
                         }
                     }
                 }
             }
         }
-    }
+        
+        stage('deploy to production') {
+            steps {
+                // This stage will only execute if the test script succeeds
+                if (currentBuild.result == 'SUCCESS') {
+                   // Configure AWS credentials
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+                    // Install AWS CLI (if not already installed)
+                    sh 'pip install awscli --upgrade --user'
+                    // Start EC2 instance
+                    sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
+    
+}
+}
+}
+}
 }

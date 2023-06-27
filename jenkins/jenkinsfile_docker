@@ -10,7 +10,7 @@ pipeline {
         newTag = ''
         currentTag = ''
         test_server = '174.129.170.89' 
-        prod_server = ' '
+        prod_server = ''
     }
 
     stages {
@@ -29,40 +29,51 @@ pipeline {
                 }
             }
         }
-     stage('Deploy Docker into EC2 Test-Servers') {
-    steps {
-        // Configure AWS credentials
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-            // Install AWS CLI (if not already installed)
-            sh 'pip install awscli --upgrade --user'
-            // Start EC2 instance
-            sh 'aws ec2 start-instances --instance-ids i-0cfdbf11a0eef79f0 --region us-east-1'
-             sshagent(['noaavisrurssh']) {
-              script {
-                  def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+        
+        stage('Deploy Docker into EC2 Test-Servers') {
+            steps {
+                // Configure AWS credentials
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+                    // Install AWS CLI (if not already installed)
+                    sh 'pip install awscli --upgrade --user'
+                    // Start EC2 instance
+                    sh 'aws ec2 start-instances --instance-ids i-0cfdbf11a0eef79f0 --region us-east-1'
+                    
+                    sshagent(['noaavisrurssh']) {
+                        script {
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+                            
                             sh """
                                 ${sshCommand} sudo dnf update -y
                                 ${sshCommand} sudo dnf install docker -y
                                 ${sshCommand} sudo service docker start
                                 ${sshCommand} sudo systemctl start docker
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
-                                ${sshCommand} docker run -d -p 5001:5000 --rm --name my-container noaavisrur/alpaca-flask:latest  
+                                ${sshCommand} docker run -d -p 5001:5000 --rm --name my-container ${dockerHubUsername}/${repositoryName}:latest
                             """
+                        }
+                    }
                 }
-         }
+            }
         }
-    }
-}
- stage('testing') {
+        
+        stage('testing') {
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/alpaca-flask/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
-                  sshagent(['noaavisrurssh']) {
-                  sh "${sshCommand} 'cd /home/ec2-user && bash test_script.sh'"
-}
-}
-}
-}
+                    // Copy script to EC2 Test Server
+                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/alpaca-flask/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
+                    
+                    sshagent(['noaavisrurssh']) {
+                        script {
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+                            sh """
+                                ${sshCommand} 'cd /home/ec2-user && bash test_script.sh'
+                            """
+                        }
+                    }
+                }
+            }
+        }
     }
 }

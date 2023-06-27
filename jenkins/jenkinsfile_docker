@@ -11,6 +11,7 @@ pipeline {
         currentTag = ''
         test_server = '174.129.170.89' 
         prod_server = ''
+        exitCode = ''
     }
 
     stages {
@@ -68,7 +69,7 @@ pipeline {
                         sshagent(['noaavisrurssh']) {
     script {
         def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
-        def exitCode = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStatus: true)
+        ${env.exitCode} = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStatus: true)
     }
 }
 
@@ -79,7 +80,7 @@ pipeline {
 stage('Additional Stage') {
     when {
         expression {
-            exitCode == 0
+            ${env.exitCode} == 0
         }
     }
     steps {

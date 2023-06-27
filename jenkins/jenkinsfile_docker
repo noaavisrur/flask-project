@@ -46,8 +46,6 @@ pipeline {
                                 ${sshCommand} sudo service docker start
                                 ${sshCommand} sudo systemctl start docker
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
-                                ${sshCommand} docker stop my-container
-                                ${sshCommand} docker rm my-container
                                 ${sshCommand} docker run -d -p 5000:5000 --rm --name my-container noaavisrur/alpaca-flask:latest  
                             """
                 }

@@ -38,6 +38,8 @@ pipeline {
             // Start EC2 instance
             sh 'aws ec2 start-instances --instance-ids i-0cfdbf11a0eef79f0 --region us-east-1'
             // Pull & run the Docker image
+              sh 'docker stop my-container'
+              sh 'docker rm my-container'
            sh 'docker run -d -p 81:80 --rm --name my-container noaavisrur/alpaca-flask:latest'
 
         }

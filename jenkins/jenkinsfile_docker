@@ -79,7 +79,7 @@ pipeline {
 stage('Additional Stage') {
     when {
         expression {
-            ${env.exitCode} == 0
+            env.exitCode == 0
         }
     }
     steps {

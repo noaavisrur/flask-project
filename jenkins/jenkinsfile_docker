@@ -70,7 +70,7 @@ pipeline {
                             script {
                                 def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
                                 exitCode = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStatus: true)
-                                sh 'echo ${env.exitCode}' 
+                                sh "echo ${env.exitCode}"
                             }
                         }
                     }

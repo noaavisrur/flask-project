@@ -50,7 +50,7 @@ pipeline {
                                 ${sshCommand} sudo service docker start
                                 ${sshCommand} sudo systemctl start docker
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
-                                ${sshCommand} sh -c 'docker rm -f $(docker ps -aq) || true'
+                                ${sshCommand} docker rm -f my-container || true
                                 ${sshCommand} docker run -d -p 5001:5000 --rm --name my-container ${dockerHubUsername}/${repositoryName}:latest
                             """
                         }
@@ -95,7 +95,7 @@ pipeline {
                                 ${sshCommand} sudo service docker start
                                 ${sshCommand} sudo systemctl start docker
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
-                                ${sshCommand} sh -c 'docker rm -f $(docker ps -aq) || true'
+                                ${sshCommand} docker rm -f my-container || true
                                 ${sshCommand} docker run -d -p 5001:5000 --rm --name my-container ${dockerHubUsername}/${repositoryName}:latest
                             """
                         }

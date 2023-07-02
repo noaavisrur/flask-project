@@ -50,6 +50,7 @@
                                 ${sshCommand} sudo service docker start
                                 ${sshCommand} sudo systemctl start docker
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
+                                ${sshCommand} sudo docker system prune -a
                                 ${sshCommand} docker run -d -p 5001:5000 --rm --name my-container ${dockerHubUsername}/${repositoryName}:latest
                             """
                         }
@@ -69,7 +70,6 @@
                 sshagent(['noaavisrurssh']) {
                     script {
                         def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
-                        ${sshCommand} sudo docker system prune -a
                         sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStdout: true) 
                     }
                 }
@@ -95,6 +95,7 @@ sshagent(['noaavisrurssh']) {
                                 ${sshCommand} sudo service docker start
                                 ${sshCommand} sudo systemctl start docker
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
+                                ${sshCommand} sudo docker system prune -a
                                 ${sshCommand} docker run -d -p 5001:5000 --rm --name my-container ${dockerHubUsername}/${repositoryName}:latest
                             """
                         }
@@ -112,7 +113,6 @@ sshagent(['noaavisrurssh']) {
                 sshagent(['noaavisrurssh']) {
                     script {
                         def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"
-                        ${sshCommand} sudo docker system prune -a
                         sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStdout: true) 
                     }
                 }

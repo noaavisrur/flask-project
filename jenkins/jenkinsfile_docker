@@ -4,7 +4,7 @@ pipeline {
     environment {
         repositoryName = 'flask-app'
         dockerHubUsername = 'noaavisrur'
-        test_server = '3.93.198.85' 
+        test_server = '34.228.159.37' 
         prod_server = '44.206.239.244'
     }
 
@@ -57,14 +57,14 @@ pipeline {
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                  catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                        // Copy script to EC2 Test Server
-                        sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
+                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
 
-                        sshagent(['noaavisrurssh']) {
-                            script {
-                                def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
-                                sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStdout: true) 
+                    sshagent(['noaavisrurssh']) {
+                        script {
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+                            def testResult = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStatus: true)
+                            if (testResult != 0) {
+                                error("Testing failed. Aborting deployment.")
                             }
                         }
                     }
@@ -102,13 +102,13 @@ pipeline {
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                   catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                        // Copy script to EC2 Test Server
-                        sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.prod_server}:/home/ec2-user"
-                        sshagent(['noaavisrurssh']) {
-                            script {
-                                def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"
-                                sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStdout: true) 
+                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.prod_server}:/home/ec2-user"
+                    sshagent(['noaavisrurssh']) {
+                        script {
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"
+                            def testResult = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStatus: true)
+                            if (testResult != 0) {
+                                error("Testing in prod failed. Aborting deployment.")
                             }
                         }
                     }

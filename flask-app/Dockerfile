@@ -1,7 +1,7 @@
 FROM python:3.8
 
 # set a directory for the app
-WORKDIR /home/noa/flask_proj/alpaca-flask
+WORKDIR /var/lib/jenkins/workspace/docker_flask_project/flask_project/flask-app
 
 # copy all the files to the container
 COPY . .

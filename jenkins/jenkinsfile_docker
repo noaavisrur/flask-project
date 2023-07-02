@@ -9,7 +9,7 @@ pipeline {
         dockerHubUsername = 'noaavisrur'
         newTag = ''
         currentTag = ''
-        test_server = '3.95.14.130' 
+        test_server = '50.19.196.1' 
         prod_server = ''
     }
 

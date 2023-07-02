@@ -71,8 +71,8 @@
                         def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
                         def result = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStdout: true)
                         int exitCode = result.toInteger()
-                        env.exitCode = exitCode // Store exitCode in an environment variable
-                        echo env.exitCode
+                        "exitCode: ${exitCode}" // Store exitCode in an environment variable
+                        echo exitCode
                     }
                 }
             }

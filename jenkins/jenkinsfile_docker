@@ -102,7 +102,7 @@ sshagent(['noaavisrurssh']) {
         }
     }
 }
-  stage('Testing') {
+  stage('Testing in prod') {
     steps {
         // Configure AWS credentials
         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {

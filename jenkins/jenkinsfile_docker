@@ -69,6 +69,7 @@
                 sshagent(['noaavisrurssh']) {
                     script {
                         def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+                        ${sshCommand} sudo docker system prune -a
                         sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStdout: true) 
                     }
                 }
@@ -84,6 +85,38 @@ stage('deploy to production') {
             // Start EC2 instance
             sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
             // Add your additional steps here
+sshagent(['noaavisrurssh']) {
+                        script {
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"
+                            
+                            sh """
+                                ${sshCommand} sudo dnf update -y
+                                ${sshCommand} sudo dnf install docker -y
+                                ${sshCommand} sudo service docker start
+                                ${sshCommand} sudo systemctl start docker
+                                ${sshCommand} sudo usermod -a -G docker ec2-user
+                                ${sshCommand} docker run -d -p 5001:5000 --rm --name my-container ${dockerHubUsername}/${repositoryName}:latest
+                            """
+                        }
+                    }
+        }
+    }
+}
+  stage('Testing') {
+    steps {
+        // Configure AWS credentials
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                // Copy script to EC2 Test Server
+                sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.prod_server}:/home/ec2-user"
+                sshagent(['noaavisrurssh']) {
+                    script {
+                        def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"
+                        ${sshCommand} sudo docker system prune -a
+                        sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStdout: true) 
+                    }
+                }
+            }
         }
     }
 }

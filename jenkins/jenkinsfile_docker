@@ -5,7 +5,7 @@ pipeline {
         // Initialize the initial version tag
         versionTag = '1.0'
         previousTag = ''
-        repositoryName = 'alpaca-flask'
+        repositoryName = 'flask-app'
         dockerHubUsername = 'noaavisrur'
         newTag = ''
         currentTag = ''
@@ -17,7 +17,7 @@ pipeline {
         stage('Clean up & clone') {
             steps {
                 sh 'sudo rm -rf *'
-                sh 'git clone https://github.com/noaavisrur/alpaca-flask.git'
+                sh 'git clone https://github.com/noaavisrur/flask-project.git'
             }
         }
         
@@ -63,7 +63,7 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
                     catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                         // Copy script to EC2 Test Server
-                        sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/alpaca-flask/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
+                        sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
                         
                         sshagent(['noaavisrurssh']) {
     script {

@@ -1,4 +1,4 @@
-pipeline {
+ pipeline {
     agent any
 
     environment {
@@ -79,17 +79,15 @@ pipeline {
             }
         }
 
-        stage('Additional Stage') {
+        stage('deploy to production') {
             when {
                 expression {
-                    exitCode == 0
+                    ${env.exitCode} == 0
                 }
             }
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    // Install AWS CLI (if not already installed)
-                    sh 'pip install awscli --upgrade --user'
                     // Start EC2 instance
                     sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
                     // Add your additional steps here

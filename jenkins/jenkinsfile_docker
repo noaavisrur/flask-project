@@ -58,41 +58,42 @@
             }
         }
         
-        stage('Testing') {
-            steps {
-                // Configure AWS credentials
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                        // Copy script to EC2 Test Server
-                        sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
+       stage('Testing') {
+    steps {
+        // Configure AWS credentials
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                // Copy script to EC2 Test Server
+                sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
 
-                        sshagent(['noaavisrurssh']) {
-                            script {
-                                def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
-                                def result = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStdout: true)
-                                int exitCode = result.toInteger()
-                                sh "echo ${exitCode}"
-                            }
-                        }
+                sshagent(['noaavisrurssh']) {
+                    script {
+                        def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+                        def result = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStdout: true)
+                        int exitCode = result.toInteger()
+                        sh "echo ${exitCode}"
+                        env.exitCode = exitCode // Store exitCode in an environment variable
                     }
                 }
             }
         }
+    }
+}
 
-        stage('deploy to production') {
-            when {
-                expression {
-                    ${env.exitCode} == 0
-                }
-            }
-            steps {
-                // Configure AWS credentials
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    // Start EC2 instance
-                    sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
-                    // Add your additional steps here
-                }
-            }
+stage('deploy to production') {
+    when {
+        expression {
+            env.exitCode == 0 // Access exitCode from environment variable
         }
     }
+    steps {
+        // Configure AWS credentials
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+            // Start EC2 instance
+            sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
+            // Add your additional steps here
+        }
+    }
+}
+}
 }

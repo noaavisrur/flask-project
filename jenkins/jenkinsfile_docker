@@ -57,41 +57,41 @@ codepipeline {
             }
         }
         
-       stage('Testing') {
-    steps {
-        // Configure AWS credentials
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                // Copy script to EC2 Test Server
-                sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
+        stage('Testing') {
+            steps {
+                // Configure AWS credentials
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        // Copy script to EC2 Test Server
+                        sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
 
-                sshagent(['noaavisrurssh']) {
-                    script {
-                        def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
-                        env.exitCode = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStatus: true)
+                        sshagent(['noaavisrurssh']) {
+                            script {
+                                def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+                                env.exitCode = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStatus: true)
+                            }
+                        }
                     }
                 }
             }
         }
-    }
-}
 
-stage('Additional Stage') {
-    when {
-        expression {
-            env.exitCode == 0
+        stage('Additional Stage') {
+            when {
+                expression {
+                    env.exitCode == 0
+                }
+            }
+            steps {
+                // Configure AWS credentials
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+                    // Install AWS CLI (if not already installed)
+                    sh 'pip install awscli --upgrade --user'
+                    // Start EC2 instance
+                    sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
+                    // Add your additional steps here
+                }
+            }
         }
     }
-    steps {
-        // Configure AWS credentials
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-            // Install AWS CLI (if not already installed)
-            sh 'pip install awscli --upgrade --user'
-            // Start EC2 instance
-            sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
-            // Add your additional steps here
-        }
-    }
-}
-}
 }

@@ -9,7 +9,7 @@ response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port)
 # Check if response code indicates success or failure
 if [ "${response}" == "200" ]; then
     echo "0"
-    docker rm -f my-container
+    sudo docker rm -f my-container
     exit 0 # success
 else
     echo "1"

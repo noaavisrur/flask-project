@@ -10,7 +10,7 @@ pipeline {
         newTag = ''
         currentTag = ''
         test_server = '50.19.196.1' 
-        prod_server = ''
+        prod_server = '	3.88.8.121'
         exitCode = ''
     }
 

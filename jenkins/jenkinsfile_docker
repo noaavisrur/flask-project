@@ -16,7 +16,7 @@ pipeline {
     stages {
         stage('Clean up & clone') {
             steps {
-                sh 'touch imhere'
+                sh 'pwd'
                 sh 'sudo rm -rf workspace/*'
                 sh 'git clone https://github.com/noaavisrur/flask-project.git'
             }

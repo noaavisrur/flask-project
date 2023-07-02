@@ -2,16 +2,10 @@ pipeline {
     agent any
 
     environment {
-        // Initialize the initial version tag
-        versionTag = '1.0'
-        previousTag = ''
         repositoryName = 'flask-app'
         dockerHubUsername = 'noaavisrur'
-        newTag = ''
-        currentTag = ''
-        test_server = '50.19.196.1' 
-        prod_server = '3.88.8.121'
-        exitCode = ''
+        test_server = '34.228.159.37' 
+        prod_server = '44.206.239.244'
     }
 
     stages {

@@ -1,4 +1,4 @@
-pipeline {
+codepipeline {
     agent any
 
     environment {
@@ -57,26 +57,25 @@ pipeline {
             }
         }
         
-        stage('Testing') {
-            steps {
-                // Configure AWS credentials
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                        // Copy script to EC2 Test Server
-                        sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
-                        
-                        sshagent(['noaavisrurssh']) {
-    script {
-        def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
-        echo sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStatus: true)
+       stage('Testing') {
+    steps {
+        // Configure AWS credentials
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                // Copy script to EC2 Test Server
+                sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
 
-    }
-}
-
+                sshagent(['noaavisrurssh']) {
+                    script {
+                        def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+                        env.exitCode = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStatus: true)
                     }
                 }
             }
         }
+    }
+}
+
 stage('Additional Stage') {
     when {
         expression {
@@ -93,7 +92,6 @@ stage('Additional Stage') {
             // Add your additional steps here
         }
     }
-}     
 }
 }
-
+}

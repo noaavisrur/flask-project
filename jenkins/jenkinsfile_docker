@@ -17,7 +17,7 @@ pipeline {
         stage('Clean up & clone') {
             steps {
                 sh 'pwd'
-                sh 'sudo cd /var/lib/jenkins/workspace && sudo rm -rf *'
+                sh 'sudo rm -rf /var/lib/jenkins/workspace/*'
                 sh 'git clone https://github.com/noaavisrur/flask-project.git'
             }
         }

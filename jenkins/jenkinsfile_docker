@@ -16,7 +16,6 @@ pipeline {
     stages {
         stage('Clean up & clone') {
             steps {
-                sh 'pwd'
                 sh 'sudo rm -rf *'
                 sh 'git clone https://github.com/noaavisrur/flask-project.git'
             }
@@ -24,7 +23,7 @@ pipeline {
         
         stage('Build and Push Docker Image') {
             steps {
-                dir('alpaca-flask/flask/flask-app') {
+                dir('flask-project/flask-app') {
                     sh "docker build -t ${dockerHubUsername}/${repositoryName}:latest ."
                     sh "docker push ${dockerHubUsername}/${repositoryName}:latest"
                 }

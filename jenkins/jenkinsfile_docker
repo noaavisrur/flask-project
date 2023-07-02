@@ -1,4 +1,4 @@
-codepipeline {
+pipeline {
     agent any
 
     environment {

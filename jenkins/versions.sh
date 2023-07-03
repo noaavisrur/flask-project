@@ -28,7 +28,7 @@ else:
     next_version = 1.0
 
 next_version = f"{next_version:.1f}"
-image_name = f"noaavisrur/flaskapp:{next_version}"
+image_name = f"noaavisrur/flask-app:{next_version}"
 client.images.build(path="/var/lib/jenkins/workspace/docker_versions/flask-project/flask-app", tag=image_name, rm=True, pull=True)
 print(f"Successfully built image: {image_name}")
 client.images.push(repository="noaavisrur/flask-app", tag=next_version)

@@ -18,7 +18,7 @@ pipeline {
         
         stage('Build and Push Docker Image') {
             steps {
-                dir('flask-project/flask-app') {
+                dir('/flask-project/flask-app/jenkins') {
                     sh "python3 jenkins/versions.sh"
                 }
             }

@@ -4,8 +4,8 @@ pipeline {
     environment {
         repositoryName = 'flask-app'
         dockerHubUsername = 'noaavisrur'
-        test_server = '54.197.5.97' 
-        prod_server = '107.23.55.116'
+        test_server = '3.88.23.132' 
+        prod_server = '54.173.42.101'
     }
 
     stages {

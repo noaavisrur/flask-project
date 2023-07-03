@@ -1,5 +1,7 @@
 import docker
 import os
+from docker import APIClient
+from docker.errors import DockerException
 
 def delete_old_versions(image_name, keep_latest=5):
     client = docker.from_env()
@@ -17,7 +19,7 @@ def delete_old_versions(image_name, keep_latest=5):
                 print(f"Deleting image: {tag}")
                 client.images.remove(image=tag, force=True)
 
-client = docker.from_env()
+client = APIClient()
 
 # Specify the path to the directory containing the docker-compose.yml file
 compose_path = "/var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB"
@@ -40,7 +42,7 @@ next_version = f"{next_version:.1f}"
 image_name = f"noaavisrur/flask-compose:{next_version}"
 latest_image_name = "noaavisrur/flask-compose:latest"
 
-client.compose.build()
+client.images.build(path=compose_path, tag=image_name)
 client.images.push(repository="noaavisrur/flask-compose", tag=next_version)
 
 # Tag the next version as "latest"

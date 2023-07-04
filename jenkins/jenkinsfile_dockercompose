@@ -1,1 +1,119 @@
+pipeline {
+    agent any
 
+    environment {
+        repositoryName = 'flask-compose'
+        dockerHubUsername = 'noaavisrur'
+        test_server = '3.88.23.132' 
+        prod_server = '54.173.42.101'
+    }
+
+    stages {
+        stage('Clean up & clone') {
+            steps {
+                sh 'sudo rm -rf *'
+                sh 'git clone https://github.com/noaavisrur/flask-project.git'
+            }
+        }
+        
+        stage('Build and Push Docker Image') {
+            steps {
+                dir('flask-project/jenkins') {
+                    sh "python3 versions-compose.py"
+                }
+            }
+        }
+        
+        stage('Deploy Docker into EC2 Test-Servers') {
+            steps {
+                // Configure AWS credentials
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+                    // Install AWS CLI (if not already installed)
+                    sh 'pip install awscli --upgrade --user'
+                    // Start EC2 instance
+                    sh 'aws ec2 start-instances --instance-ids i-0cfdbf11a0eef79f0 --region us-east-1'
+                    
+                    sshagent(['noaavisrurssh']) {
+                        script {
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+                            
+                            sh """
+                                ${sshCommand} sudo dnf update -y
+                                ${sshCommand} sudo dnf install docker -y
+                                ${sshCommand} sudo service docker start
+                                ${sshCommand} sudo systemctl start docker
+                                ${sshCommand} sudo usermod -a -G docker ec2-user
+                                ${sshCommand} docker rm -f my-container || true
+                                ${sshCommand} cd flask-project/flask+DB
+                                ${sshCommand} docker-compose up -d
+                            """
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Testing') {
+            steps {
+                // Configure AWS credentials
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
+
+                    sshagent(['noaavisrurssh']) {
+                        script {
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+                            def testResult = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStatus: true)
+                            if (testResult != 0) {
+                                error("Testing failed. Aborting deployment.")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to production') {
+            steps {
+                // Configure AWS credentials
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+                    // Start EC2 instance
+                    sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
+                    
+                    sshagent(['noaavisrurssh']) {
+                        script {
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"
+                            
+                            sh """
+                                ${sshCommand} sudo dnf update -y
+                                ${sshCommand} sudo dnf install docker -y
+                                ${sshCommand} sudo service docker start
+                                ${sshCommand} sudo systemctl start docker
+                                ${sshCommand} sudo usermod -a -G docker ec2-user
+                                ${sshCommand} cd flask-project/flask+DB
+                                ${sshCommand} docker-compose up -d
+                            """
+                        }
+                    }
+                }
+            }
+        }
+  
+        stage('Testing in prod') {
+            steps {
+                // Configure AWS credentials
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.prod_server}:/home/ec2-user"
+                    sshagent(['noaavisrurssh']) {
+                        script {
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"
+                            def testResult = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStatus: true)
+                            if (testResult != 0) {
+                                error("Testing in prod failed. Aborting deployment.")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

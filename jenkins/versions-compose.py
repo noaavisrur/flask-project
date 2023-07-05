@@ -5,6 +5,20 @@ import subprocess
 
 def delete_old_versions(image_name, keep_latest=5):
     # Docker image deletion logic (same as before)
+    client = docker.from_env()
+    images = client.images.list(name=image_name)
+
+    if len(images) <= keep_latest:
+        return
+
+    images.sort(key=lambda image: image.attrs["Created"], reverse=True)
+
+    for i in range(keep_latest, len(images)):
+        image = images[i]
+        for tag in image.tags:
+            if tag.startswith(image_name + ":"):
+                print(f"Deleting image: {tag}")
+                client.images.remove(image=tag, force=True)
 
 # Step 1: Build and run containers using docker-compose
 compose_command = "docker-compose -f /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/docker-compose.yml up --build -d"

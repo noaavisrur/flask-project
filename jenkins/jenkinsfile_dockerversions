@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        repositoryName = 'flask-compose'
+        repositoryName = 'flask-app'
         dockerHubUsername = 'noaavisrur'
         test_server = '3.88.23.132' 
         prod_server = '54.173.42.101'
@@ -19,7 +19,7 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 dir('flask-project/jenkins') {
-                    sh "python3 versions-compose.py"
+                    sh "python3 versions.sh"
                 }
             }
         }
@@ -44,8 +44,7 @@ pipeline {
                                 ${sshCommand} sudo systemctl start docker
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
                                 ${sshCommand} docker rm -f my-container || true
-                                ${sshCommand} cd flask-project/flask+DB
-                                ${sshCommand} docker-compose up -d
+                                ${sshCommand} docker run -d -p 5001:5000 --rm --name my-container ${dockerHubUsername}/${repositoryName}:latest
                             """
                         }
                     }
@@ -89,8 +88,8 @@ pipeline {
                                 ${sshCommand} sudo service docker start
                                 ${sshCommand} sudo systemctl start docker
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
-                                ${sshCommand} cd flask-project/flask+DB
-                                ${sshCommand} docker-compose up -d
+                                ${sshCommand} docker rm -f my-container || true
+                                ${sshCommand} docker run -d -p 5001:5000 --rm --name my-container ${dockerHubUsername}/${repositoryName}:latest
                             """
                         }
                     }

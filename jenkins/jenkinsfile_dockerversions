@@ -101,7 +101,7 @@ pipeline {
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_flask_project/flask-project/jenkins/test_script.sh ec2-user@${env.prod_server}:/home/ec2-user"
+                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_versions/flask-project/jenkins/test_script.sh ec2-user@${env.prod_server}:/home/ec2-user"
                     sshagent(['noaavisrurssh']) {
                         script {
                             def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"

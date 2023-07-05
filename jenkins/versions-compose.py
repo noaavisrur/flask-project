@@ -1,52 +1,31 @@
-import docker
+#!/usr/bin/python3
+
 import os
-from docker.errors import DockerException
+import subprocess
 
 def delete_old_versions(image_name, keep_latest=5):
-    client = docker.from_env()
-    images = client.images.list(name=image_name)
+    # Docker image deletion logic (same as before)
 
-    if len(images) <= keep_latest:
-        return
+# Step 1: Build and run containers using docker-compose
+compose_command = "docker-compose -f /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB up --build -d"
+subprocess.run(compose_command, shell=True, check=True)
 
-    images.sort(key=lambda image: image.attrs["Created"], reverse=True)
+# Step 2: Get the version information and calculate the next version
+# (same as before)
 
-    for i in range(keep_latest, len(images)):
-        image = images[i]
-        for tag in image.tags:
-            if tag.startswith(image_name + ":"):
-                print(f"Deleting image: {tag}")
-                client.images.remove(image=tag, force=True)
+# Step 3: Tag and push the Flask image
+image_name = f"noaavisrur/flask-app:{next_version}"
+latest_image_name = "noaavisrur/flask-app:latest"
 
-# Specify the path to the directory containing the docker-compose.yml file
-compose_path = "/var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/flask-app"
+# Tag the next version
+tag_command = f"docker tag {image_name} {latest_image_name}"
+subprocess.run(tag_command, shell=True, check=True)
 
-# Change to the directory containing the docker-compose.yml file
-os.chdir(compose_path)
+# Push the tagged images
+push_command = f"docker push {image_name}"
+subprocess.run(push_command, shell=True, check=True)
+push_command = f"docker push {latest_image_name}"
+subprocess.run(push_command, shell=True, check=True)
 
-# Get the latest version
-client = docker.from_env()
-existing_versions = [float(tag.split(":")[1]) for image in client.images.list() for tag in image.tags if tag.startswith("noaavisrur/flask-compose:")]
-if existing_versions:
-    latest_version = max(existing_versions)
-    next_version = latest_version + 0.1
-else:
-    next_version = 1.0
-
-# Format the version number
-next_version = f"{next_version:.1f}"
-
-# Build and push the Docker Compose project
-image_name = f"noaavisrur/flask-compose:{next_version}"
-latest_image_name = "noaavisrur/flask-compose:latest"
-
-client.images.build(path=compose_path, tag=image_name)
-client.images.push(repository="noaavisrur/flask-compose", tag=next_version)
-
-# Tag the next version as "latest"
-client.images.get(image_name).tag(latest_image_name)
-
-# Push the latest image to Docker Hub
-client.images.push(repository="noaavisrur/flask-compose", tag="latest")
-
-delete_old_versions("noaavisrur/flask-compose", keep_latest=5)
+# Step 4: Delete old versions
+delete_old_versions("noaavisrur/flask-app", keep_latest=5)

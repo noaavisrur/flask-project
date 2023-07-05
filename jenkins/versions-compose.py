@@ -19,7 +19,7 @@ def delete_old_versions(image_name, keep_latest=5):
                 client.images.remove(image=tag, force=True)
 
 # Specify the path to the directory containing the docker-compose.yml file
-compose_path = "/var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB"
+compose_path = "/var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/flask-app"
 
 # Change to the directory containing the docker-compose.yml file
 os.chdir(compose_path)

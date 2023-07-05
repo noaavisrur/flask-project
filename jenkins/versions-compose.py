@@ -7,7 +7,7 @@ def delete_old_versions(image_name, keep_latest=5):
     # Docker image deletion logic (same as before)
 
 # Step 1: Build and run containers using docker-compose
-compose_command = "docker-compose -f /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB up --build -d"
+compose_command = "docker-compose -f /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/docker-compose.yml up --build -d"
 subprocess.run(compose_command, shell=True, check=True)
 
 # Step 2: Get the version information and calculate the next version

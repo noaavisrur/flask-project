@@ -21,15 +21,16 @@ def delete_old_versions(image_name, keep_latest=5):
 
 client = docker.from_env()
 images = client.images.list()
-existing_versions = [float(image.tags[0].split(":")[1]) for image in images if image.tags and image.tags[0].startswith("noaavisrur/flask-app:")]
+existing_versions = [float(image.tags[0].split(":")[1]) for image in images if image.tags and image.tags[0].startswith("noaavisrur/compose-flask:")]
 if existing_versions:
     latest_version = max(existing_versions)
     version_parts = str(latest_version).split('.')
     major = int(version_parts[0])
     minor = int(version_parts[1])
-    next_version = f"{major}.{minor+1}"
+    patch = int(version_parts[2])
+    next_version = f"{major}.{minor}.{patch + 1}"
 else:
-    next_version = "1.0"
+    next_version = "1.0.0"
 
 image_name = f"noaavisrur/compose-flask:{next_version}"
 latest_image_name = "noaavisrur/compose-flask:latest"
@@ -38,15 +39,19 @@ latest_image_name = "noaavisrur/compose-flask:latest"
 compose_command = "docker-compose -f /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/docker-compose.yml up --build -d"
 subprocess.run(compose_command, shell=True, check=True)
 
-# Step 2: Tag and push the Flask image
+# Step 2: Build and tag the Flask image
+build_command = f"docker build -t {image_name} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/flask-app"
+subprocess.run(build_command, shell=True, check=True)
+
+# Step 3: Tag and push the Flask image
 tag_command = f"docker tag {image_name} {latest_image_name}"
 subprocess.run(tag_command, shell=True, check=True)
 
-# Push the tagged images
 push_command = f"docker push {image_name}"
 subprocess.run(push_command, shell=True, check=True)
+
 push_command = f"docker push {latest_image_name}"
 subprocess.run(push_command, shell=True, check=True)
 
-# Step 3: Delete old versions
+# Step 4: Delete old versions
 delete_old_versions("noaavisrur/compose-flask", keep_latest=5)

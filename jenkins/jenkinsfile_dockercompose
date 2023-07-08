@@ -33,7 +33,7 @@ pipeline {
                     // Start EC2 instance
                     sh 'aws ec2 start-instances --instance-ids i-0cfdbf11a0eef79f0 --region us-east-1'
                     //copy DB to ec2
-                      sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/workspace/docker_compose_flask/flask-project/flask+DB/db/init.sql ec2-user@${env.test_server}:/home/ec2-user"
+                      sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/db/init.sql ec2-user@${env.test_server}:/home/ec2-user"
                     sshagent(['noaavisrurssh']) {
                         script {
                             def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
@@ -79,7 +79,7 @@ pipeline {
                     // Start EC2 instance
                     sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
                     //copy DB to ec2
-                      sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/workspace/docker_compose_flask/flask-project/flask+DB/db/init.sql ec2-user@${env.prod_server}:/home/ec2-user"
+                      sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/db/init.sql ec2-user@${env.prod_server}:/home/ec2-user"
                     sshagent(['noaavisrurssh']) {
                         script {
                             def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"

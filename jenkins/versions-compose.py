@@ -31,8 +31,8 @@ if existing_versions:
 else:
     next_version = "1.0"
 
-image_name = f"noaavisrur/flask-app:{next_version}"
-latest_image_name = "noaavisrur/flask-app:latest"
+image_name = f"noaavisrur/compose-flask:{next_version}"
+latest_image_name = "noaavisrur/compose-flask:latest"
 
 # Step 1: Build and run containers using docker-compose
 compose_command = "docker-compose -f /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/docker-compose.yml up --build -d"
@@ -49,4 +49,4 @@ push_command = f"docker push {latest_image_name}"
 subprocess.run(push_command, shell=True, check=True)
 
 # Step 3: Delete old versions
-delete_old_versions("noaavisrur/flask-app", keep_latest=5)
+delete_old_versions("noaavisrur/compose-flask", keep_latest=5)

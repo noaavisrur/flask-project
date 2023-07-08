@@ -1,8 +1,7 @@
 version: "2"
 services:
   app:
-    image: noaavisrur/compose-flask
-    build: /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/flask-app 
+    image: noaavisrur/compose-flask:latest
     links:
       - db
     ports:

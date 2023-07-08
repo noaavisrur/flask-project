@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        repositoryName = 'flask-compose'
+        repositoryName = 'flask-app'
         dockerHubUsername = 'noaavisrur'
         test_server = '3.94.198.147' 
         prod_server = '3.86.58.105'
@@ -32,7 +32,8 @@ pipeline {
                     sh 'pip install awscli --upgrade --user'
                     // Start EC2 instance
                     sh 'aws ec2 start-instances --instance-ids i-0cfdbf11a0eef79f0 --region us-east-1'
-                    
+                    //copy DB to ec2
+                      sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/workspace/docker_compose_flask/flask-project/flask+DB/db/init.sql ec2-user@${env.test_server}:/home/ec2-user"
                     sshagent(['noaavisrurssh']) {
                         script {
                             def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
@@ -44,8 +45,7 @@ pipeline {
                                 ${sshCommand} sudo systemctl start docker
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
                                 ${sshCommand} docker rm -f my-container || true
-                                ${sshCommand} cd flask-project/flask+DB
-                                ${sshCommand} docker-compose up -d
+                                ${sshCommand} docker run -d -p 5001:5000 --rm --name my-container ${dockerHubUsername}/${repositoryName}:latest
                             """
                         }
                     }
@@ -78,6 +78,9 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
                     // Start EC2 instance
                     sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
+                    //copy DB to ec2
+                      sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/workspace/docker_compose_flask/flask-project/flask+DB/db/init.sql ec2-user@${env.prod_server}:/home/ec2-user"
+                    sshagent(['noaavisrurssh']) {
                     
                     sshagent(['noaavisrurssh']) {
                         script {
@@ -89,8 +92,7 @@ pipeline {
                                 ${sshCommand} sudo service docker start
                                 ${sshCommand} sudo systemctl start docker
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
-                                ${sshCommand} cd flask-project/flask+DB
-                                ${sshCommand} docker-compose up -d
+                                ${sshCommand}  ${sshCommand} docker run -d -p 5001:5000 --rm --name my-container ${dockerHubUsername}/${repositoryName}:latest
                             """
                         }
                     }

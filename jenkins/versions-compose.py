@@ -28,7 +28,7 @@ if existing_versions:
     major = int(version_parts[0])
     minor = int(version_parts[1])
     patch = int(version_parts[2])
-    next_version = f"{major}.{minor}.{patch + 1}"
+    next_version = f"{major}.{minor+1}"
 else:
     next_version = "1.0"
 

@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        repositoryName = 'flask-app'
+        repositoryName = 'compose-flask'
         dockerHubUsername = 'noaavisrur'
         test_server = '3.94.198.147' 
         prod_server = '3.86.58.105'

@@ -44,6 +44,7 @@ pipeline {
                                 ${sshCommand} sudo service docker start
                                 ${sshCommand} sudo systemctl start docker
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
+                                ${sshCommand} sudo dnf install docker-compose
                                 ${sshCommand} docker rm -f my-container || true
                                 ${sshCommand} docker-compose up 
                             """
@@ -90,6 +91,7 @@ pipeline {
                                 ${sshCommand} sudo service docker start
                                 ${sshCommand} sudo systemctl start docker
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
+                                ${sshCommand} sudo dnf install docker-compose
                                 ${sshCommand} docker rm -f my-container || true
                                 ${sshCommand} docker-compose up
                             """

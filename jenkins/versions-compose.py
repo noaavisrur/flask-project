@@ -29,7 +29,7 @@ else:
 
 next_version = f"{next_version:.1f}"
 image_name = f"noaavisrur/flask-compose:{next_version}"
-client.images.build(path="/var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+Db/flask-app", tag=image_name, rm=True, pull=True)
+client.images.build(path="/var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/flask-app", tag=image_name, rm=True, pull=True)
 print(f"Successfully built image: {image_name}")
 client.images.push(repository="noaavisrur/flask-compose", tag=next_version)
 print(f"Successfully pushed image: {image_name}")

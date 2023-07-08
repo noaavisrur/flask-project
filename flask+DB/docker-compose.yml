@@ -1,7 +1,7 @@
 version: "2"
 services:
   app:
-    build: /var/lib/jenkins/workspace/docker_flask_project/flask-project/flask+DB/flask-app 
+    build: /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/flask-app 
     links:
       - db
     ports:
@@ -13,4 +13,4 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
     volumes:
-      - /var/lib/jenkins/workspace/docker_flask_project/flask-project/flask+DB/db:/docker-entrypoint-initdb.d/:ro
+      - /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/db:/docker-entrypoint-initdb.d/:ro

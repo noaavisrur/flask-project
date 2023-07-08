@@ -1,7 +1,7 @@
 version: "2"
 services:
   app:
-    image: noaavisrur/compose-flask:latest
+    image: noaavisrur/flask-compose:latest
     links:
       - db
     ports:

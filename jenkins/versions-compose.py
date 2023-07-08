@@ -39,7 +39,7 @@ latest_image_name = "noaavisrur/flask-compose:latest"
 client.images.get(image_name).tag(latest_image_name)
 print(f"Successfully tagged image as latest: {latest_image_name}")
 # Push the latest image to Docker Hub
-client.images.push(repository="noaavisrur/flask-app", tag="latest")
+client.images.push(repository="noaavisrur/flask-compose", tag="latest")
 print(f"Successfully pushed latest image: {latest_image_name}")
 
-delete_old_versions("noaavisrur/flask-app", keep_latest=5)
+delete_old_versions("noaavisrur/flask-compose", keep_latest=5)

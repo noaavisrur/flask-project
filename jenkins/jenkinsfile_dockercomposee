@@ -45,7 +45,7 @@ pipeline {
                                 ${sshCommand} sudo systemctl start docker
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
                                 ${sshCommand} docker rm -f my-container || true
-                                ${sshCommand} docker-compose up -d 
+                                ${sshCommand} docker-compose up -build
                             """
                         }
                     }

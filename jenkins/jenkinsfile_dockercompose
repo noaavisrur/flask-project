@@ -81,8 +81,6 @@ pipeline {
                     //copy DB to ec2
                       sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/workspace/docker_compose_flask/flask-project/flask+DB/db/init.sql ec2-user@${env.prod_server}:/home/ec2-user"
                     sshagent(['noaavisrurssh']) {
-                    
-                    sshagent(['noaavisrurssh']) {
                         script {
                             def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"
                             

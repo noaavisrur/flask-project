@@ -1,7 +1,7 @@
 FROM python:3.8
 
 # set a directory for the app
-WORKDIR /home/noa/flask-compose-dir
+WORKDIR /home/ec2-user/flask-compose-dir
 
 # copy all the files to the container
 COPY . .

@@ -98,7 +98,7 @@ pipeline {
                     sshagent(['noaavisrurssh']) {
                         script {
                             def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${test_server}"
-                            def testResult = sh(script: "${sshCommand} bash /home/ec2-user/compose_test_script.sh ${env.test_server}", returnStatus: true)
+                            def testResult = sh(script: "${sshCommand} bash /home/ec2-user/compose_test_script.sh ${test_server}", returnStatus: true)
                             if (testResult != 0) {
                                 error("Testing failed. Aborting deployment.")
                             }

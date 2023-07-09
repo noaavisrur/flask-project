@@ -1,7 +1,7 @@
 FROM python:3.8
 
 # set a directory for the app
-WORKDIR /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB
+WORKDIR /home/noa/flask-compose-dir
 
 # copy all the files to the container
 COPY . .

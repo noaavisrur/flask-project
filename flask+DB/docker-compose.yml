@@ -12,5 +12,4 @@ services:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
-    volumes:
-      - /home/ec2-user/flask-compose-dir:/docker-entrypoint-initdb.d/:ro
+ 

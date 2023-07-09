@@ -5,6 +5,8 @@ pipeline {
         repositoryName = 'flask-compose'
         dockerHubUsername = 'noaavisrur'
         ssh_key = '/var/lib/jenkins/noa.pem'
+        test_server = ''
+        prod_server = ''
     }
 
     stages {
@@ -50,6 +52,7 @@ pipeline {
                 }
             }
         }
+
         stage('Build and Push Docker Image') {
             steps {
                 dir('flask-project/jenkins') {
@@ -57,7 +60,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deploy Docker into EC2 Test-Servers') {
             steps {
                 // Configure AWS credentials
@@ -83,13 +86,13 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Testing') {
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
                     sh "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/jenkins/compose_test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
-                      sshagent(['noaavisrurssh']) {
+                    sshagent(['noaavisrurssh']) {
                         script {
                             def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
                             def testResult = sh(script: "${sshCommand} bash /home/ec2-user/compose_test_script.sh ${env.test_server}", returnStatus: true)
@@ -128,4 +131,3 @@ pipeline {
         }
     }
 }
-  

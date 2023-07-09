@@ -32,7 +32,7 @@ pipeline {
                     sh 'pip install awscli --upgrade --user'
                     // Start EC2 instance
                     sh 'aws ec2 start-instances --instance-ids i-09b5c69cd4a5a0695 --region us-east-1'
-                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/docker-compose.yml ec2-user@${env.test_server}:/home/ec2-user"
+                    sh "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/docker-compose.yml ec2-user@${env.test_server}:/home/ec2-user"
                     sshagent(['noaavisrurssh']) {
                         script {
                             def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
@@ -59,8 +59,7 @@ pipeline {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
                     sh "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/jenkins/compose_test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
-
-                    sshagent(['noaavisrurssh']) {
+                      sshagent(['noaavisrurssh']) {
                         script {
                             def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
                             def testResult = sh(script: "${sshCommand} bash /home/ec2-user/compose_test_script.sh ${env.test_server}", returnStatus: true)
@@ -79,12 +78,10 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
                     // Start EC2 instance
                     sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
-                    sh "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/docker-compose.yml ec2-user@${env.prod_server}:/home/ec2-user
-"
+                    sh "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/docker-compose.yml ec2-user@${env.prod_server}:/home/ec2-user"
                     sshagent(['noaavisrurssh']) {
                         script {
                             def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"
-                            
                             sh """
                                   ${sshCommand} sudo dnf update -y
                                 ${sshCommand} sudo dnf install docker -y
@@ -101,6 +98,6 @@ pipeline {
                 }
             }
         }
-  }
+    }
 }
   

@@ -13,4 +13,4 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
     volumes:
-      - /home/noa/flask-compose-dir:/docker-entrypoint-initdb.d/:ro
+      - /home/ec2-user/flask-compose-dir:/docker-entrypoint-initdb.d/:ro

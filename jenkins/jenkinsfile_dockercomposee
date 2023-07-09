@@ -21,10 +21,6 @@ pipeline {
                 dir('flask-project/jenkins') {
                     sh "python3 versions-compose.py"
                 }
-                 dir('flask-project/flask+DB/db') {
-                    sh "docker build -t my-mysql-image ."
-               }
-
             }
         }
         

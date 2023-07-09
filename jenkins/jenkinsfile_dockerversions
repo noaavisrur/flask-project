@@ -4,8 +4,9 @@ pipeline {
     environment {
         repositoryName = 'flask-app'
         dockerHubUsername = 'noaavisrur'
-        test_server = '44.211.190.202' 
-        prod_server = '172.31.82.1421'
+        ssh_key = '/var/lib/jenkins/noa.pem'
+        test_server = ''
+        prod_server = ''
     }
 
     stages {
@@ -15,7 +16,46 @@ pipeline {
                 sh 'git clone https://github.com/noaavisrur/flask-project.git'
             }
         }
-        
+
+         stage('Turn on machines & define IP') {
+            steps {
+                // Configure AWS credentials
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
+                    // Install AWS CLI (if not already installed)
+                    sh 'pip install awscli --upgrade --user'
+                    
+                    // Start EC2 instances
+                    sh 'aws ec2 start-instances --instance-ids i-09b5c69cd4a5a0695 --region us-east-1'
+                    sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
+
+                    // Sleep for 1 minute to allow instances to start up
+                    sleep 1
+
+                    // Retrieve test server IP
+                    script {
+                        def instanceId = 'i-09b5c69cd4a5a0695' // Replace with your actual test server instance ID
+                        
+                        // Get the public IP address of the EC2 instance
+                        def ipAddress = sh(returnStdout: true, script: "aws ec2 describe-instances --instance-ids ${instanceId} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region us-east-1").trim()
+                        
+                        // Assign the IP address to the 'test_server' variable
+                        test_server = ipAddress
+                    }
+                    
+                    // Retrieve prod server IP
+                    script {
+                        def instanceId = 'i-09e50d587ef089b33' // Replace with your actual prod server instance ID
+                        
+                        // Get the public IP address of the EC2 instance
+                        def ipAddress = sh(returnStdout: true, script: "aws ec2 describe-instances --instance-ids ${instanceId} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region us-east-1").trim()
+                        
+                        // Assign the IP address to the 'prod_server' variable
+                        prod_server = ipAddress
+                    }
+                }
+            }
+        }
+
         stage('Build and Push Docker Image') {
             steps {
                 dir('flask-project/jenkins') {
@@ -28,14 +68,9 @@ pipeline {
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    // Install AWS CLI (if not already installed)
-                    sh 'pip install awscli --upgrade --user'
-                    // Start EC2 instance
-                    sh 'aws ec2 start-instances --instance-ids i-0cfdbf11a0eef79f0 --region us-east-1'
-                    
                     sshagent(['noaavisrurssh']) {
                         script {
-                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${test_server}"
                             
                             sh """
                                 ${sshCommand} sudo dnf update -y
@@ -56,11 +91,10 @@ pipeline {
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_versions/flask-project/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
-
+                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_versions/flask-project/jenkins/test_script.sh ec2-user@${test_server}:/home/ec2-user"
                     sshagent(['noaavisrurssh']) {
                         script {
-                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${test_server}"
                             def testResult = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStatus: true)
                             if (testResult != 0) {
                                 error("Testing failed. Aborting deployment.")
@@ -75,13 +109,9 @@ pipeline {
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    // Start EC2 instance
-                    sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
-                    
                     sshagent(['noaavisrurssh']) {
                         script {
-                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"
-                            
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${prod_server}"
                             sh """
                                 ${sshCommand} sudo dnf update -y
                                 ${sshCommand} sudo dnf install docker -y
@@ -91,24 +121,6 @@ pipeline {
                                 ${sshCommand} docker rm -f my-container || true
                                 ${sshCommand} docker run -d -p 5001:5000 --rm --name my-container ${dockerHubUsername}/${repositoryName}:latest
                             """
-                        }
-                    }
-                }
-            }
-        }
-  
-        stage('Testing in prod') {
-            steps {
-                // Configure AWS credentials
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_versions/flask-project/jenkins/test_script.sh ec2-user@${env.prod_server}:/home/ec2-user"
-                    sshagent(['noaavisrurssh']) {
-                        script {
-                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"
-                            def testResult = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStatus: true)
-                            if (testResult != 0) {
-                                error("Testing in prod failed. Aborting deployment.")
-                            }
                         }
                     }
                 }

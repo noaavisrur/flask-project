@@ -68,10 +68,10 @@ pipeline {
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    sh "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/docker-compose.yml ec2-user@${env.test_server}:/home/ec2-user"
+                    sh "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/docker-compose.yml ec2-user@${test_server}:/home/ec2-user"
                     sshagent(['noaavisrurssh']) {
                         script {
-                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${test_server}"
                             
                             sh """
                                 ${sshCommand} sudo dnf update -y
@@ -94,10 +94,10 @@ pipeline {
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    sh "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/jenkins/compose_test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
+                    sh "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/jenkins/compose_test_script.sh ec2-user@${test_server}:/home/ec2-user"
                     sshagent(['noaavisrurssh']) {
                         script {
-                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${test_server}"
                             def testResult = sh(script: "${sshCommand} bash /home/ec2-user/compose_test_script.sh ${env.test_server}", returnStatus: true)
                             if (testResult != 0) {
                                 error("Testing failed. Aborting deployment.")
@@ -112,10 +112,10 @@ pipeline {
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    sh "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/docker-compose.yml ec2-user@${env.prod_server}:/home/ec2-user"
+                    sh "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/docker-compose.yml ec2-user@${prod_server}:/home/ec2-user"
                     sshagent(['noaavisrurssh']) {
                         script {
-                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"
+                            def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${prod_server}"
                             sh """
                                   ${sshCommand} sudo dnf update -y
                                 ${sshCommand} sudo dnf install docker -y

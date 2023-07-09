@@ -57,12 +57,12 @@ pipeline {
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_versions/flask-project/jenkins/test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
+                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_versions/flask-project/jenkins/compose_test_script.sh ec2-user@${env.test_server}:/home/ec2-user"
 
                     sshagent(['noaavisrurssh']) {
                         script {
                             def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.test_server}"
-                            def testResult = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh", returnStatus: true)
+                            def testResult = sh(script: "${sshCommand} bash /home/ec2-user/test_script.sh ${env.test_server}", returnStatus: true)
                             if (testResult != 0) {
                                 error("Testing failed. Aborting deployment.")
                             }
@@ -104,7 +104,7 @@ pipeline {
             steps {
                 // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
-                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_versions/flask-project/jenkins/test_script.sh ec2-user@${env.prod_server}:/home/ec2-user"
+                    sh "scp -i ${env.ssh_key} /var/lib/jenkins/workspace/docker_versions/flask-project/jenkins/compose_test_script.sh ec2-user@${env.prod_server}:/home/ec2-user"
                     sshagent(['noaavisrurssh']) {
                         script {
                             def sshCommand = "ssh -i ${env.ssh_key} -o StrictHostKeyChecking=no ec2-user@${env.prod_server}"

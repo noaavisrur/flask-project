@@ -1,13 +1,11 @@
 version: "2"
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: noaavisrur/flask-compose:latest
+    links:
+      - db
     ports:
       - "5000:5000"
-    volumes:
-      - /home/noa/flask-compose-dir/init.sql:/app/init.sql:ro
   db:
     image: mysql:5.7
     ports:
@@ -15,4 +13,4 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
     volumes:
-      - /home/noa/flask-compose-dir:/docker-entrypoint-initdb.d/:ro
+      - /home/ec2-user/flask-compose-dir:/docker-entrypoint-initdb.d/:ro

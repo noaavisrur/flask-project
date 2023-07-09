@@ -4,8 +4,6 @@ pipeline {
     environment {
         repositoryName = 'flask-compose'
         dockerHubUsername = 'noaavisrur'
-        test_server = '' 
-        prod_server = ''
     }
 
     stages {
@@ -15,38 +13,42 @@ pipeline {
                 sh 'git clone https://github.com/noaavisrur/flask-project.git'
             }
         }
-     
-        stage('turn on machines & define ip') {
-        steps{
-         // Configure AWS credentials
+
+        stage('Turn on machines & define IP') {
+            steps {
+                // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
                     // Install AWS CLI (if not already installed)
                     sh 'pip install awscli --upgrade --user'
-                    // Start EC2 instance
+                    
+                    // Start EC2 instances
                     sh 'aws ec2 start-instances --instance-ids i-09b5c69cd4a5a0695 --region us-east-1'
                     sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
-           script {
-                def instanceId = 'i-09b5c69cd4a5a0695' // Replace with your actual instance ID
-                
-                // Get the public IP address of the EC2 instance
-                def ipAddress = sh(returnStdout: true, script: "aws ec2 describe-instances --instance-ids ${instanceId} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region us-east-1").trim()
-                
-                // Store the IP address in an environment variable for later use
-                env.test_server = ipAddress
+                    
+                    // Retrieve test server IP
+                    script {
+                        def instanceId = 'i-09b5c69cd4a5a0695' // Replace with your actual test server instance ID
+                        
+                        // Get the public IP address of the EC2 instance
+                        def ipAddress = sh(returnStdout: true, script: "aws ec2 describe-instances --instance-ids ${instanceId} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region us-east-1").trim()
+                        
+                        // Assign the IP address to the 'test_server' variable
+                        test_server = ipAddress
+                    }
+                    
+                    // Retrieve prod server IP
+                    script {
+                        def instanceId = 'i-09e50d587ef089b33' // Replace with your actual prod server instance ID
+                        
+                        // Get the public IP address of the EC2 instance
+                        def ipAddress = sh(returnStdout: true, script: "aws ec2 describe-instances --instance-ids ${instanceId} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region us-east-1").trim()
+                        
+                        // Assign the IP address to the 'prod_server' variable
+                        prod_server = ipAddress
+                    }
+                }
             }
-         script {
-                def instanceId = 'i-09e50d587ef089b33' // Replace with your actual instance ID
-                
-                // Get the public IP address of the EC2 instance
-                def ipAddress = sh(returnStdout: true, script: "aws ec2 describe-instances --instance-ids ${instanceId} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region us-east-1").trim()
-                
-                // Store the IP address in an environment variable for later use
-                env.prod_server = ipAddress
-            }
-}
-}
-}
-
+        }
         stage('Build and Push Docker Image') {
             steps {
                 dir('flask-project/jenkins') {

@@ -29,7 +29,7 @@ pipeline {
                 def instanceId = 'i-09b5c69cd4a5a0695' // Replace with your actual instance ID
                 
                 // Get the public IP address of the EC2 instance
-                def ipAddress = sh(returnStdout: true, script: "aws ec2 describe-instances --instance-ids ${instanceId} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text").trim()
+                def ipAddress = sh(returnStdout: true, script: "aws ec2 describe-instances --instance-ids ${instanceId} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region us-east-1").trim()
                 
                 // Store the IP address in an environment variable for later use
                 env.test_server = ipAddress
@@ -38,7 +38,7 @@ pipeline {
                 def instanceId = 'i-09e50d587ef089b33' // Replace with your actual instance ID
                 
                 // Get the public IP address of the EC2 instance
-                def ipAddress = sh(returnStdout: true, script: "aws ec2 describe-instances --instance-ids ${instanceId} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text").trim()
+                def ipAddress = sh(returnStdout: true, script: "aws ec2 describe-instances --instance-ids ${instanceId} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region us-east-1").trim()
                 
                 // Store the IP address in an environment variable for later use
                 env.prod_server = ipAddress

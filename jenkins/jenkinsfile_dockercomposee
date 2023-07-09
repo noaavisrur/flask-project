@@ -15,8 +15,9 @@ pipeline {
                 sh 'git clone https://github.com/noaavisrur/flask-project.git'
             }
         }
-     stages {
+     
         stage('turn on machines & define ip') {
+        steps{
          // Configure AWS credentials
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'noaavisrur']]) {
                     // Install AWS CLI (if not already installed)

@@ -27,7 +27,10 @@ pipeline {
                     // Start EC2 instances
                     sh 'aws ec2 start-instances --instance-ids i-09b5c69cd4a5a0695 --region us-east-1'
                     sh 'aws ec2 start-instances --instance-ids i-09e50d587ef089b33 --region us-east-1'
-                    
+
+                    // Sleep for 1 minute to allow instances to start up
+                    sleep 1
+
                     // Retrieve test server IP
                     script {
                         def instanceId = 'i-09b5c69cd4a5a0695' // Replace with your actual test server instance ID

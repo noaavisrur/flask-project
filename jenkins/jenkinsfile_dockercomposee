@@ -42,6 +42,7 @@ pipeline {
                                 ${sshCommand} sudo dnf install docker -y
                                 ${sshCommand} sudo service docker start
                                 ${sshCommand} sudo systemctl start docker
+                                ${sshCommand} sudo apt-get install python3-pip
                                 ${sshCommand} pip install mysql-connector-python
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
                                 ${sshCommand} docker rm -f my-container || true

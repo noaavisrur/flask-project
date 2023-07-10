@@ -17,9 +17,36 @@ spec:
           image: noaavisrur/flask-compose:latest
           ports:
             - containerPort: 5000
+          env:
+            - name: MYSQL_HOST
+              value: db
+            - name: MYSQL_PORT
+              value: "3306"
+          # Add additional configurations for the Flask container
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-compose-container
+  template:
+    metadata:
+      labels:
+        app: mysql-compose-container
+    spec:
+      containers:
         - name: mysql-compose-container
           image: noaavisrur/mysql-compose:latest
-          # Add additional configurations for the database container
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "root"
+          # Add additional configurations for the MySQL container
 
 ---
 
@@ -35,3 +62,17 @@ spec:
       port: 80
       targetPort: 5000
   type: NodePort
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+spec:
+  selector:
+    app: mysql-compose-container
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306

@@ -30,11 +30,19 @@ for image in images:
         right_versions.append(right)
 
 if left_versions:
-    latest_left_version = max(left_versions)
-    latest_right_version = max(right_versions)
-    next_version = f"{latest_left_version}.{latest_right_version + 1}"
+    next_version_left = max(left_versions)
+    if right_versions:
+        next_version_right = max(right_versions) + 1
+        # If we've reached 10, increment the left part and reset the right part to 0
+        if next_version_right == 10:
+            next_version_left += 1
+            next_version_right = 0
+    else:
+        next_version_right = 0
 else:
-    next_version = "1.0"
+    next_version_left, next_version_right = 1, 0
+
+next_version = f"{next_version_left}.{next_version_right}"
 
 image_name = f"noaavisrur/flask-compose:{next_version}"
 client.images.build(path="/var/lib/jenkins/workspace/docker_compose_flask/flask-project/flask+DB/flask-app", tag=image_name, rm=True, pull=True)

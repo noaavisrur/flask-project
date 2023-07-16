@@ -24,7 +24,7 @@ images = client.images.list()
 left_versions = []
 right_versions = []
 for image in images:
-    if image.tags and image.tags[0].startswith("noaavisrur/flask-app:"):
+    if image.tags and image.tags[0].startswith("noaavisrur/flask-compose:"):
         left, right = map(int, image.tags[0].split(":")[1].split("."))
         left_versions.append(left)
         right_versions.append(right)

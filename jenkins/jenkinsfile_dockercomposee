@@ -82,8 +82,8 @@ pipeline {
                                 ${sshCommand} pip install mysql-connector-python
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
                                 ${sshCommand} docker rm -f my-container || true
-                                ${sshCommand} docker rmi -f noaavisrur/flask-compose:lastest 
-                                ${sshCommand} docker rmi -f noaavisrur/mysql-compose:lastest 
+                                ${sshCommand} docker rmi -f noaavisrur/flask-compose:latest 
+                                ${sshCommand} docker rmi -f noaavisrur/mysql-compose:latest 
                                 ${sshCommand} docker-compose up -d
                             """
                         }
@@ -127,8 +127,8 @@ pipeline {
                                 ${sshCommand} pip install mysql-connector-python
                                 ${sshCommand} sudo usermod -a -G docker ec2-user
                                 ${sshCommand} docker rm -f my-container || true
-                                ${sshCommand} docker rmi -f noaavisrur/flask-compose:lastest 
-                                ${sshCommand} docker rmi -f noaavisrur/mysql-compose:lastest 
+                                ${sshCommand} docker rmi -f noaavisrur/flask-compose:latest 
+                                ${sshCommand} docker rmi -f noaavisrur/mysql-compose:latest 
                                 ${sshCommand} docker-compose up -d
                             """
                         }

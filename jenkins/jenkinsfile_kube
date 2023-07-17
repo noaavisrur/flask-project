@@ -24,7 +24,8 @@ pipeline {
 
         stage('apply the cluster') {
             steps {
-          sh 'kubectl delete --all pods --all-namespaces'
+          sh 'kubectl delete deployments --all'
+          sh 'kubectl delete services --all'
           sh 'kubectl apply -f /var/lib/jenkins/composeflask_kube.yml'
           sh 'kubectl get nodes -o wide'
        }

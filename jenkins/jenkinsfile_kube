@@ -26,7 +26,7 @@ pipeline {
             steps {
           sh 'kubectl delete --all pods --all-namespaces'
           sh 'kubectl apply -f /var/lib/jenkins/composeflask_kube.yml'
-          kubectl get nodes -o wide
+          sh 'kubectl get nodes -o wide'
        }
       }
     }

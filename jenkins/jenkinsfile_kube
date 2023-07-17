@@ -1,1 +1,33 @@
+pipeline {
+    agent any
 
+    environment {
+        repositoryName = 'flask-compose'
+        dockerHubUsername = 'noaavisrur'
+        ssh_key = '/var/lib/jenkins/noa.pem'
+    }
+
+    stages {
+        stage('Clean up & clone') {
+            steps {
+                sh 'sudo rm -rf *'
+                sh 'git clone https://github.com/noaavisrur/flask-project.git'
+            }
+        }
+        stage('Build and Push Docker Image') {
+            steps {
+                dir('flask-project/jenkins') {
+                    sh "python3 versions-compose.py"
+                }
+            }
+        }
+
+        stage('apply the cluster') {
+            steps {
+          sh 'kubectl delete --all pods --all-namespaces'
+          sh 'kubectl apply -f /var/lib/jenkins/composeflask_kube.yml'
+          kubectl get nodes -o wide
+       }
+      }
+    }
+}

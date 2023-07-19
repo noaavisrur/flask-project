@@ -18,9 +18,8 @@ pipeline {
 
         stage('Turn on GCP Instance') {
             steps {
-                sh 'curl https://sdk.cloud.google.com | bash'
-                sh 'source $HOME/google-cloud-sdk/path.bash.inc'
-                sh 'gcloud init --disable-prompts'
+               withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {
+                    sh 'gcloud auth activate-service-account --key-file="$GCLOUD_CREDS"'
                 script {
                     // Define the GCP instance ID and project ID
                     def instanceId = '5240862386400511472'
@@ -43,7 +42,7 @@ pipeline {
                 }
             }
         }
-
+}
         stage('Build and Push Docker Image') {
             steps {
                 dir('flask-project/jenkins') {

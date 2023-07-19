@@ -4,7 +4,6 @@ pipeline {
     environment {
         repositoryName = 'flask-compose'
         dockerHubUsername = 'noaavisrur'
-        ssh_key = '/var/lib/jenkins/google.pem''
     }
 
         stage('Clean up & clone') {

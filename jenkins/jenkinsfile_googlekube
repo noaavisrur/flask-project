@@ -24,7 +24,7 @@ pipeline {
 
         stage('testing') {
             steps {
-                sh 'sudo kubectl config use-context rancher-desktop'
+                sh 'kubectl config use-context rancher-desktop'
                 sh 'kubectl delete deployments --all'
                 sh 'kubectl delete services --all'
                 sh 'kubectl apply -f /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/kubernetes/flaskdb_kube.yml'

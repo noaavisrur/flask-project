@@ -22,23 +22,23 @@ pipeline {
 
         stage('testing') {
             steps {
-                sh 'kubectl config use-context rancher-desktop'
-                sh 'kubectl delete deployments --all'
-                sh 'kubectl delete services --all'
-                sh 'kubectl apply -f /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/kubernetes/flaskdb_kube.yml'
-                sh 'kubectl get nodes -o wide'
+                sh 'sudo kubectl config use-context rancher-desktop'
+                sh 'sudo kubectl delete deployments --all'
+                sh 'sudo kubectl delete services --all'
+                sh 'sudo kubectl apply -f /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/kubernetes/flaskdb_kube.yml'
+                sh 'sudo kubectl get nodes -o wide'
             }
         }
 
         stage('deploy to prod') {
             steps {
                 withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {
-                    sh 'gcloud auth activate-service-account --key-file="$GCLOUD_CREDS"'
-                    sh 'gcloud container clusters get-credentials flask-cluster1 --region us-east1 --project disco-rope-393211'
-                    sh 'kubectl delete deployments --all'
-                    sh 'kubectl delete services --all'
-                    sh 'kubectl apply -f /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/kubernetes/flaskdb_kube.yml'
-                    sh 'kubectl get nodes -o wide'
+                    sh 'sudo gcloud auth activate-service-account --key-file="$GCLOUD_CREDS"'
+                    sh 'sudo gcloud container clusters get-credentials flask-cluster1 --region us-east1 --project disco-rope-393211'
+                    sh 'sudo kubectl delete deployments --all'
+                    sh 'sudo kubectl delete services --all'
+                    sh 'sudo kubectl apply -f /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/kubernetes/flaskdb_kube.yml'
+                    sh 'sudo kubectl get nodes -o wide'
             }
         }
     }

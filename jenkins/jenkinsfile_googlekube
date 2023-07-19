@@ -18,9 +18,6 @@ pipeline {
 
         stage('Turn on GCP Instance') {
             steps {
-                sh 'curl https://sdk.cloud.google.com | bash'
-                sh 'source $HOME/google-cloud-sdk/path.bash.inc'
-                sh 'gcloud init --disable-prompts'
                 script {
                     // Define the GCP instance ID and project ID
                     def instanceId = '5240862386400511472'

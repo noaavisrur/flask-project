@@ -9,6 +9,14 @@ pipeline {
     }
 
     stages {
+        stage('Install Google Cloud SDK') {
+            steps {
+                sh 'curl https://sdk.cloud.google.com | bash'
+                sh 'exec -l $SHELL'
+                sh 'gcloud init --disable-prompts'
+            }
+        }
+
         stage('Clean up & clone') {
             steps {
                 sh 'sudo rm -rf *'
@@ -18,8 +26,6 @@ pipeline {
 
         stage('Turn on GCP Instance') {
             steps {
-               withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {
-                    sh 'gcloud auth activate-service-account --key-file="$GCLOUD_CREDS"'
                 script {
                     // Define the GCP instance ID and project ID
                     def instanceId = '5240862386400511472'
@@ -28,8 +34,8 @@ pipeline {
                     // Turn on the GCP instance
                     sh "gcloud compute instances start ${instanceId} --project=${projectId}"
 
-                   // Sleep for 1 minute to allow instances to start up
-                    sleep 1
+                    // Sleep for 1 minute to allow instances to start up
+                    sleep 60
 
                     // Retrieve the internal IP address of the GCP instance
                     def internalIp = sh(
@@ -42,37 +48,7 @@ pipeline {
                 }
             }
         }
-}
+
         stage('Build and Push Docker Image') {
             steps {
-                dir('flask-project/jenkins') {
-                    sh "python3 versions-compose.py"
-                }
-            }
-        }
-
-        stage('testing') {
-            steps {
-                sh 'sudo snap install kubectl --classic'
-                sh 'kubectl delete deployments --all'
-                sh 'kubectl delete services --all'
-                sh 'kubectl apply -f /var/lib/jenkins/composeflask_kube.yml'
-                sh 'kubectl get nodes -o wide'
-            }
-        }
-
-        stage('deploy to prod') {
-            steps {
-                withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {
-                    sh 'gcloud auth activate-service-account --key-file="$GCLOUD_CREDS"'
-                    sh "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${env.ssh_key} /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/kubernetes/flaskdb_kube.yml noaavi1234@${env.prod_server}:/home/noaavi1234"
-                    sh 'sudo snap install kubectl --classic'
-                    sh 'kubectl delete deployments --all'
-                    sh 'kubectl delete services --all'
-                    sh 'kubectl apply -f /home/noaavi1234/flaskdb_kube.yml'
-                    sh 'kubectl get nodes -o wide'
-                }
-            }
-        }
-    }
-}
+                dir('flask

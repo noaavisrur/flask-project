@@ -5,7 +5,7 @@ pipeline {
         repositoryName = 'flask-compose'
         dockerHubUsername = 'noaavisrur'
     }
-
+     stages{
         stage('Clean up & clone') {
             steps {
                 sh 'sudo rm -rf *'
@@ -43,4 +43,4 @@ pipeline {
         }
     }
 }
-
+}

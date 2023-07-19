@@ -4,7 +4,8 @@ pipeline {
     environment {
         repositoryName = 'flask-compose'
         dockerHubUsername = 'noaavisrur'
-        ssh_key = '/var/lib/jenkins/noa.pem'
+        ssh_key = '/var/lib/jenkins/google.pem'
+        prod_server = ''
     }
 
     stages {
@@ -14,6 +15,32 @@ pipeline {
                 sh 'git clone https://github.com/noaavisrur/flask-project.git'
             }
         }
+
+        stage('Turn on GCP Instance') {
+            steps {
+                script {
+                    // Define the GCP instance ID and project ID
+                    def instanceId = '5240862386400511472'
+                    def projectId = 'disco-rope-393211'
+
+                    // Turn on the GCP instance
+                    sh "gcloud compute instances start ${instanceId} --project=${projectId}"
+
+                   // Sleep for 1 minute to allow instances to start up
+                    sleep 1
+
+                    // Retrieve the internal IP address of the GCP instance
+                    def internalIp = sh(
+                        script: "gcloud compute instances describe ${instanceId} --format='get(networkInterfaces[0].networkIP)' --project=${projectId}",
+                        returnStdout: true
+                    ).trim()
+
+                    // Set the internal IP address to the 'prod_server' variable
+                    prod_server = internalIp
+                }
+            }
+        }
+
         stage('Build and Push Docker Image') {
             steps {
                 dir('flask-project/jenkins') {
@@ -24,12 +51,26 @@ pipeline {
 
         stage('testing') {
             steps {
-          sh 'sudo snap install kubectl --classic'
-          sh 'kubectl delete deployments --all'
-          sh 'kubectl delete services --all'
-          sh 'kubectl apply -f /var/lib/jenkins/composeflask_kube.yml'
-          sh 'kubectl get nodes -o wide'
-       }
-      }
+                sh 'sudo snap install kubectl --classic'
+                sh 'kubectl delete deployments --all'
+                sh 'kubectl delete services --all'
+                sh 'kubectl apply -f /var/lib/jenkins/composeflask_kube.yml'
+                sh 'kubectl get nodes -o wide'
+            }
+        }
+
+        stage('deploy to prod') {
+            steps {
+                withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {
+                    sh 'gcloud auth activate-service-account --key-file="$GCLOUD_CREDS"'
+                    sh "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${env.ssh_key} /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/kubernetes/flaskdb_kube.yml noaavi1234@${env.prod_server}:/home/noaavi1234"
+                    sh 'sudo snap install kubectl --classic'
+                    sh 'kubectl delete deployments --all'
+                    sh 'kubectl delete services --all'
+                    sh 'kubectl apply -f /home/noaavi1234/flaskdb_kube.yml'
+                    sh 'kubectl get nodes -o wide'
+                }
+            }
+        }
     }
 }

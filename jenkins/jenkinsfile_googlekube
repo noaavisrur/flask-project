@@ -60,4 +60,25 @@ pipeline {
         stage('testing') {
             steps {
                 sh 'sudo snap install kubectl --classic'
-                sh
+                sh 'kubectl delete deployments --all'
+                sh 'kubectl delete services --all'
+                sh 'kubectl apply -f /var/lib/jenkins/composeflask_kube.yml'
+                sh 'kubectl get nodes -o wide'
+            }
+        }
+
+        stage('deploy to prod') {
+            steps {
+                withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {
+                    sh 'gcloud auth activate-service-account --key-file="$GCLOUD_CREDS"'
+                    sh "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${env.ssh_key} /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/kubernetes/flaskdb_kube.yml noaavi1234@${env.prod_server}:/home/noaavi1234"
+                    sh 'sudo snap install kubectl --classic'
+                    sh 'kubectl delete deployments --all'
+                    sh 'kubectl delete services --all'
+                    sh 'kubectl apply -f /home/noaavi1234/flaskdb_kube.yml'
+                    sh 'kubectl get nodes -o wide'
+                }
+            }
+        }
+    }
+}

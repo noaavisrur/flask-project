@@ -29,6 +29,7 @@ if [ -z "$port" ]; then
 fi
 
 # Make HTTP request to the Kubernetes service using the Windows machine's IP and the dynamically assigned LoadBalancer port (ClusterIP:Port)
+echo $windows_machine_ip:$port
 response=$(curl -s -o /dev/null -w "%{http_code}" http://$windows_machine_ip:$port)
 
 # Check if response code indicates success or failure

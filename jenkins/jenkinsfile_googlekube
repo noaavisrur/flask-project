@@ -22,7 +22,7 @@ pipeline {
             }
         }
 
-        stage('testing') {
+        stage('running kubernetes on test') {
             steps {
                 sh 'kubectl config use-context rancher-desktop'
                 sh 'kubectl delete deployments --all'
@@ -31,7 +31,15 @@ pipeline {
                 sh 'kubectl get nodes -o wide'
             }
         }
-
+         stage('Testing') {
+                     steps {
+                        script {
+                            def testResult = sh(script: "bash test_kube_service.sh flask-app-service", returnStatus: true)
+                            if (testResult != 0) {
+                                error("Testing failed. Aborting deployment.")
+                            }
+                        }
+                    }
         stage('deploy to prod') {
             steps {
                 withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {

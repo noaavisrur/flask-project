@@ -10,11 +10,9 @@ fi
 # Replace 'WINDOWS_MACHINE_IP' with the actual IP address of the Windows machine running Rancher Desktop
 windows_machine_ip="172.21.8.216"
 
-# Ensure that kubectl is configured to use the local cluster on Rancher Desktop
-kubectl --kubeconfig=/path/to/your/kubeconfig.yaml config use-context "rancher-desktop"
 
 # Get the host port mapped to the Kubernetes service's target port
-port=$(kubectl --kubeconfig=/path/to/your/kubeconfig.yaml get service $service_name -o=jsonpath='{.spec.ports[0].nodePort}')
+port=$(kubectl --kubeconfig=/var/lib/jenkins/.kube/config get service $service_name -o=jsonpath='{.spec.ports[0].nodePort}')
 
 # Check if the service has been exposed with a nodePort
 if [ -z "$port" ]; then

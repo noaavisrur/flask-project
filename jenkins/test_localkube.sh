@@ -12,7 +12,7 @@ windows_machine_ip="172.21.8.216"
 
 
 # Get the host port mapped to the Kubernetes service's target port
-port=$(kubectl --kubeconfig=/var/lib/jenkins/.kube/config get service $service_name -o=jsonpath='{.spec.ports[0].nodePort}')
+port=$(kubectl --kubeconfig=/var/lib/jenkins/.kube/config get service $service_name -o=jsonpath='{.spec.ports[0].port}')
 
 # Check if the service has been exposed with a nodePort
 if [ -z "$port" ]; then

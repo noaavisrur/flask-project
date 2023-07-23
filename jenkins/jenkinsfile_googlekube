@@ -34,7 +34,7 @@ pipeline {
          stage('Testing') {
                      steps {
                         script {
-                            def testResult = sh(script: "bash test_kube_service.sh flask-app-service", returnStatus: true)
+                            def testResult = sh(script: "bash test_kube.sh flask-app-service", returnStatus: true)
                             if (testResult != 0) {
                                 error("Testing failed. Aborting deployment.")
                             }

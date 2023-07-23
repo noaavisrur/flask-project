@@ -10,17 +10,25 @@ fi
 # Replace 'WINDOWS_MACHINE_IP' with the actual IP address of the Windows machine running Rancher Desktop
 windows_machine_ip="172.21.8.216"
 
+# Get the ClusterIP of the Kubernetes service
+cluster_ip=$(kubectl --kubeconfig=/var/lib/jenkins/.kube/config get service $service_name -o=jsonpath='{.spec.clusterIP}')
 
-# Get the host port mapped to the Kubernetes service's target port
-port=$(kubectl --kubeconfig=/var/lib/jenkins/.kube/config get service $service_name -o=jsonpath='{.spec.ports[0].port}')
-
-# Check if the service has been exposed with a nodePort
-if [ -z "$port" ]; then
-    echo "Error: The service '$service_name' does not have a nodePort assigned."
+# Check if the ClusterIP is empty (service might not be running or configured properly)
+if [ -z "$cluster_ip" ]; then
+    echo "Error: The service '$service_name' is not running or does not have a valid ClusterIP."
     exit 1
 fi
 
-# Make HTTP request to the Kubernetes service using the Windows machine's IP and the mapped port
+# Get the dynamically assigned LoadBalancer port using JSONPath
+port=$(kubectl --kubeconfig=/var/lib/jenkins/.kube/config get service $service_name -o=jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+
+# Check if the service has a port assigned
+if [ -z "$port" ]; then
+    echo "Error: The service '$service_name' does not have a port assigned."
+    exit 1
+fi
+
+# Make HTTP request to the Kubernetes service using the Windows machine's IP and the dynamically assigned LoadBalancer port (ClusterIP:Port)
 response=$(curl -s -o /dev/null -w "%{http_code}" http://$windows_machine_ip:$port)
 
 # Check if response code indicates success or failure

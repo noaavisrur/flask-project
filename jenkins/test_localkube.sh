@@ -8,7 +8,7 @@ if [ -z "$service_name" ]; then
 fi
 
 # Replace 'WINDOWS_MACHINE_IP' with the actual IP address of the Windows machine running Rancher Desktop
-windows_machine_ip="WINDOWS_MACHINE_IP"
+windows_machine_ip="172.21.8.216"
 
 # Ensure that kubectl is configured to use the local cluster on Rancher Desktop
 kubectl --kubeconfig=/path/to/your/kubeconfig.yaml config use-context "rancher-desktop"

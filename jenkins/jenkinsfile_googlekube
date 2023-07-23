@@ -40,6 +40,7 @@ pipeline {
                             }
                         }
                     }
+}
         stage('deploy to prod') {
             steps {
                 withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {

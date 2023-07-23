@@ -34,7 +34,7 @@ pipeline {
          stage('Testing') {
     steps {
            sh 'kubectl config get-contexts'
-           sh 'bash  bash /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/jenkins/test_localkube.sh flask-app-service'
+           sh 'bash /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/jenkins/test_localkube.sh flask-app-service'
          
             }
         }

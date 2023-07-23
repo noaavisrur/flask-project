@@ -32,14 +32,14 @@ pipeline {
             }
         }
          stage('Testing') {
-                     steps {
-                        script {
-                            def testResult = sh(script: "bash /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/jenkins/test_localkube.sh flask-app-service", returnStatus: true)
-                            if (testResult != 0) {
-                                error("Testing failed. Aborting deployment.")
-                            }
-                        }
-                    }
+    steps {
+        script {
+            def testResult = sh(script: 'bash /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/jenkins/test_localkube.sh flask-app-service', returnStatus: true)
+            if (testResult != 0) {
+                error("Testing failed. Aborting deployment.")
+            }
+        }
+    }
 }
         stage('deploy to prod') {
             steps {

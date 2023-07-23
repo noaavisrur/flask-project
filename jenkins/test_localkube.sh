@@ -19,8 +19,8 @@ if [ -z "$cluster_ip" ]; then
     exit 1
 fi
 
-# Get the dynamically assigned LoadBalancer port using JSONPath
-port=$(kubectl --kubeconfig=/var/lib/jenkins/.kube/config get service $service_name -o=jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+# Get the dynamically assigned LoadBalancer port by describing the service and parsing the output
+port=$(kubectl --kubeconfig=/var/lib/jenkins/.kube/config describe service $service_name | awk '/^ *Port:/ {print $3}' | sed 's/\/.*//')
 
 # Check if the service has a port assigned
 if [ -z "$port" ]; then

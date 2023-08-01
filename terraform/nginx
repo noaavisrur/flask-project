@@ -1,0 +1,59 @@
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "tls_private_key" "example" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "aws_key_pair" "generated_key" {
+  key_name   = "tf_key"
+  public_key = tls_private_key.example.public_key_openssh
+}
+
+resource "aws_instance" "example" {
+  ami           = "ami-0b739cfe458c431a8"
+  instance_type = "t2.micro"
+
+  key_name = aws_key_pair.generated_key.key_name
+
+  vpc_security_group_ids = ["sg-00f8b293712289351"]
+
+  tags = {
+    Name = "tf-instance"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo dnf update -y",
+      "sudo dnf install -y nginx",
+      "sudo systemctl start nginx",
+      "sudo systemctl enable nginx"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = tls_private_key.example.private_key_pem
+      host        = self.public_ip
+    }
+  }
+}
+
+resource "local_sensitive_file" "private_key" {
+  content = tls_private_key.example.private_key_pem
+  filename          = "${path.module}/noa_tf.pem"
+  file_permission   = "0600"
+}
+
+output "public_ip" {
+  description = "Public IP address of the instance"
+  value       = aws_instance.example.public_ip
+}
+
+output "public_dns" {
+  description = "Public DNS of the instance"
+  value       = aws_instance.example.public_dns
+}
+

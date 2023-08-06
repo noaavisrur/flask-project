@@ -46,6 +46,7 @@ pipeline {
                     sh 'kubectl delete deployments --all'
                     sh 'kubectl delete services --all'
                     sh 'kubectl apply -f /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/kubernetes/flaskdb_kube.yml'
+                    sh 'sleep 60'
                     sh 'kubectl get svc flask-app-service'
                 }
             }

@@ -40,7 +40,7 @@ pipeline {
         }
  stage('create gcp cluster with tf') {
             steps {
-                sh 'cd /var/lib/jenkins/terraform && terraform apply'
+                sh 'cd /var/lib/jenkins/terraform && terraform apply -auto-approve'
                 sleep 600
                 }
             }

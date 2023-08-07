@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+
+    environment {
+        repositoryName = 'flask-compose'
+        dockerHubUsername = 'noaavisrur'
+    }
+
+    stages {
+        stage('Clean up & clone') {
+            steps {
+                sh 'rm -rf *'
+                sh 'git clone https://github.com/noaavisrur/flask-project.git'
+            }
+        }
+
+        stage('Build and Push Docker Image') {
+            steps {
+                dir('flask-project/jenkins') {
+                    sh 'python3 versions-compose.py'
+                }
+            }
+        }
+
+        stage('running kubernetes on test') {
+            steps {
+                sh 'kubectl config use-context rancher-desktop'
+                sh 'kubectl delete deployments --all'
+                sh 'kubectl delete services --all'
+                sh 'kubectl apply -f /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/kubernetes/flaskdb_kube.yml'
+                sh 'kubectl get nodes -o wide'
+            }
+        }
+         stage('Testing') {
+    steps {
+           sh 'kubectl config get-contexts'
+           sh 'bash /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/jenkins/test_localkube.sh flask-app-service'
+         
+            }
+        }
+        stage('deploy to prod') {
+            steps {
+                withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {
+                    sh 'gcloud auth activate-service-account --key-file="$GCLOUD_CREDS"'
+                    sh 'gcloud container clusters get-credentials flask-cluster1 --region us-east1 --project disco-rope-393211'
+                    sh 'kubectl delete deployments --all'
+                    sh 'kubectl delete services --all'
+                    sh 'kubectl apply -f /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/kubernetes/flaskdb_kube.yml'
+                    sh 'sleep 60'
+                    sh 'kubectl get svc flask-app-service'
+                }
+            }
+        }
+    }
+}

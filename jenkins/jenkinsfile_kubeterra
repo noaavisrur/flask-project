@@ -41,7 +41,7 @@ pipeline {
  stage('create gcp cluster with tf') {
             steps {
                 sh 'cd /var/lib/jenkins/terraform && terraform apply'
-                sleep 300
+                sleep 600
                 }
             }
         stage('deploy to prod') {

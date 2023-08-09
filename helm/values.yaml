@@ -1,0 +1,13 @@
+# Flask app configurations
+flask:
+  replicas: 1
+  image:
+    repository: noaavisrur/flask-compose
+    tag: latest
+
+# MySQL configurations
+mysql:
+  replicas: 1
+  image:
+    repository: noaavisrur/mysql-compose
+    tag: latest

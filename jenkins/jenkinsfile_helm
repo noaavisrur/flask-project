@@ -62,7 +62,6 @@ pipeline {
                     sh 'gcloud container clusters get-credentials cluster-1 --region us-central1-a --project disco-rope-393211'
                     sh 'kubectl delete deployments --all'
                     sh 'kubectl delete services --all'
-                    sh 'helm uninstall my-release-name'
                     sh "helm install my-release-name ${env.LATEST_CHART}"
                     sh 'sleep 60'
                     sh 'kubectl get svc flask-app-service'

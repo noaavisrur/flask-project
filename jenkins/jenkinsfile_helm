@@ -31,7 +31,8 @@ pipeline {
                         def latestChart = helmCharts[helmCharts.size() - 1]
                         env.LATEST_CHART = latestChart.split("/").last()
                     }
-                    sh "gsutil cp ${env.LATEST_CHART} ."
+                    echo "Latest chart to copy: ${env.LATEST_CHART}"
+                    sh "gsutil cp gs://flask_helm/${env.LATEST_CHART} ."
                 }
             }
         }

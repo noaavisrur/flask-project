@@ -22,30 +22,43 @@ pipeline {
             }
         }
 
+        stage('Fetch Latest Helm Chart') {
+            steps {
+                withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {
+                    sh 'gcloud auth activate-service-account --key-file="$GCLOUD_CREDS"'
+                    def helmCharts = sh(script: 'gsutil ls gs://flask_helm/helm-project*.tgz | sort', returnStdout: true).trim().split("\n")
+                    def latestChart = helmCharts[helmCharts.size() - 1]
+                    sh "gsutil cp ${latestChart} ."
+                    env.LATEST_CHART = latestChart.split("/").last()
+                }
+            }
+        }
+
         stage('running kubernetes on test') {
             steps {
                 sh 'kubectl config use-context rancher-desktop'
                 sh 'kubectl delete deployments --all'
                 sh 'kubectl delete services --all'
-                sh 'kubectl apply -f /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/kubernetes/flaskdb_kube.yml'
+                sh "helm install ${env.LATEST_CHART} --name my-release-name"
                 sh 'kubectl get nodes -o wide'
             }
         }
-         stage('Testing') {
-    steps {
-           sh 'kubectl config get-contexts'
-           sh 'bash /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/jenkins/test_localkube.sh flask-app-service'
-         
+
+        stage('Testing') {
+            steps {
+                sh 'kubectl config get-contexts'
+                sh 'bash /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/jenkins/test_localkube.sh flask-app-service'
             }
         }
+
         stage('deploy to prod') {
             steps {
                 withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {
                     sh 'gcloud auth activate-service-account --key-file="$GCLOUD_CREDS"'
-                    sh 'gcloud container clusters get-credentials flask-cluster1 --region us-east1 --project disco-rope-393211'
+                    sh 'gcloud container clusters get-credentials cluster-1 --region us-central1-a --project disco-rope-393211'
                     sh 'kubectl delete deployments --all'
                     sh 'kubectl delete services --all'
-                    sh 'kubectl apply -f /var/lib/jenkins/workspace/kubecloud_pipeline/flask-project/kubernetes/flaskdb_kube.yml'
+                    sh "helm install ${env.LATEST_CHART} --name my-prod-release-name"
                     sh 'sleep 60'
                     sh 'kubectl get svc flask-app-service'
                 }

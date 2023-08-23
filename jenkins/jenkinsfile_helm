@@ -17,7 +17,7 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 dir('flask-project/jenkins') {
-                    sh 'python3 versions-compose.py'
+                    sh 'python3 versions-helm.py'
                 }
             }
         }

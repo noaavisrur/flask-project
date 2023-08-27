@@ -1,11 +1,11 @@
-CREATE DATABASE devopsroles;
+-- Create the database
+CREATE DATABASE IF NOT EXISTS devopsroles;
 USE devopsroles;
 
-CREATE TABLE test_table (
-  url VARCHAR(100)
+-- Create the table for storing song lyrics
+CREATE TABLE IF NOT EXISTS lyrics_table (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(255),
+  artist VARCHAR(255),
+  lyrics TEXT
 );
-
-INSERT INTO test_table (url)
-VALUES
-  ("https://media.tenor.com/OZLXGyrE6FYAAAAM/alpaca-eating.gif"),
-  ("https://media0.giphy.com/media/3otWpNrbfVfVgyAOis/200w.gif?cid=6c0");

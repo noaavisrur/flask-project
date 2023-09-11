@@ -40,6 +40,7 @@ pipeline {
         stage('running kubernetes on test') {
             steps {
                 sh 'kubectl config use-context rancher-desktop'
+                sh 'kubectl rollout restart deployment flask-app-deployment -n default'
                 sh "helm upgrade my-release-name ${env.LATEST_CHART} --install"
                 sh 'kubectl get nodes -o wide'
             }
@@ -57,6 +58,7 @@ pipeline {
                 withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {
                     sh 'gcloud auth activate-service-account --key-file="$GCLOUD_CREDS"'
                     sh 'gcloud container clusters get-credentials cluster-1 --region us-central1-a --project disco-rope-393211'
+                    sh 'kubectl rollout restart deployment flask-app-deployment -n default'
                     sh "helm upgrade my-release-name ${env.LATEST_CHART} --install"
                     sh 'sleep 60'
                     sh 'kubectl get svc flask-app-service'
